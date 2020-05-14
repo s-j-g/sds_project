@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Sally Jung" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 1</title>
+    <meta name="generator" content="Hugo 0.70.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/jung_project1/">Project 1</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<pre class="r"><code># Data sets
+setwd(&quot;/Users/SJ/Desktop&quot;)
+dune &lt;- read.csv(&quot;GrassIOF_Dune_Data_sds.csv&quot;)
+grass &lt;- read.csv(&quot;GrassIOF_Grass_Data_sds.csv&quot;)
+head(dune)</code></pre>
+<pre><code>##   Plant Month Day Year Treatment Plot Quadrat D_Height  D_X  D_Y
+## 1     1     7  18 2019         1    2       7      0.0  0.0  0.0
+## 2     2     7  18 2019         1    2       7      5.0 23.0 38.0
+## 3     3     7  19 2019         1    2       7      4.6 11.4 11.8
+## 4     4     7  19 2019         1    2       7      0.0  0.0  0.0
+## 5     5     7  19 2019         1    2       7      1.5 12.0 13.7
+## 6     6     7  19 2019         1    2       7      1.6  7.2  8.3</code></pre>
+<pre class="r"><code>head(grass)</code></pre>
+<pre><code>##   Plant Month Day Year Treatment Plot Quadrat G_Height  G_X  G_Y
+## 1     1     7  18 2019         1    2       7      6.8  3.7  4.0
+## 2     2     7  18 2019         1    2       7      8.0 16.5 28.4
+## 3     3     7  19 2019         1    2       7      1.4  7.7  8.0
+## 4     4     7  19 2019         1    2       7      3.0  3.0  5.1
+## 5     5     7  19 2019         1    2       7     16.0  5.0  7.0
+## 6     6     7  19 2019         1    2       7      2.5  3.5  5.2</code></pre>
+<p>Introduction: The two datasets I have chosen were collected by me last summer when I was a REU intern. The lab I was with had rainfall manipulation experiments set up at the Jornada Long Term Ecological Research site in New Mexico to observe how changing rainfall would impact vegetation. Plots in the rainfall manipulation experiments consisted of plastic shingle roofs that blocked out a percentage of rain to simulate reduced rainfall, and the blocked water was collected and diverted to another plot through a sprinkler system to simulate increased rainfall. In the data, Treatment 1 represents reduced rainfall by 80% (-80%), Treatment 2 represents -50%, Treatment 3 represents the control, Treatment 4 represents increased rainfall by 50% (+50%), and Treatment 5 represents +80%. For each plot, 2 quadrats were used to collected data, which turned out to be a total of 80 quadrats (40 plots x 2 quadrats). I collected data on the characteristics of the Black Gramma grasses and their sandy dunes that were in the plots. I collected the height, width (X), length (Y) of the dunes, which was Dataset 1, and the height, width (X), length (Y) of the grasses on the dunes, which was Dataset 2 in cm. I expect that with increased rainfall, grass characterists and dune length and width will increase. With this data, I hope to make a poster and present it at a conference.</p>
+<pre class="r"><code># Joining
+library(ggplot2)
+library(magrittr)
+library(dplyr)
+
+merged &lt;- dune %&gt;% left_join(grass)</code></pre>
+<p>I chose a left join in order to keep the dune dataframe on the left and add the grass dataframe to the right where there were matches. They were joined by Plant, Month, Day, Year, Treatment, Plot, and Quadrat. No cases were dropped since each dataframe had the same number of plants and had data for each characteristic. The joined dataset was called “merged”. I joined the datasets without tidying them because I could not figure out how to get the joined dataset tidy. However, the next step shows how I tidyied my untidyied joined dataset.</p>
+<pre class="r"><code># Tidying
+library(tidyverse)
+
+merged %&gt;% pivot_longer(cols = c(&quot;D_Height&quot;:&quot;G_Y&quot;))</code></pre>
+<pre><code>## # A tibble: 2,922 x 9
+##    Plant Month   Day  Year Treatment  Plot Quadrat name     value
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;chr&gt;    &lt;dbl&gt;
+##  1     1     7    18  2019         1     2       7 D_Height   0  
+##  2     1     7    18  2019         1     2       7 D_X        0  
+##  3     1     7    18  2019         1     2       7 D_Y        0  
+##  4     1     7    18  2019         1     2       7 G_Height   6.8
+##  5     1     7    18  2019         1     2       7 G_X        3.7
+##  6     1     7    18  2019         1     2       7 G_Y        4  
+##  7     2     7    18  2019         1     2       7 D_Height   5  
+##  8     2     7    18  2019         1     2       7 D_X       23  
+##  9     2     7    18  2019         1     2       7 D_Y       38  
+## 10     2     7    18  2019         1     2       7 G_Height   8  
+## # … with 2,912 more rows</code></pre>
+<pre class="r"><code>merged1 &lt;- merged %&gt;% pivot_longer(contains(&quot;_&quot;)) %&gt;% separate(name, 
+    into = c(&quot;Type&quot;, &quot;Variable&quot;)) %&gt;% pivot_wider(names_from = &quot;Variable&quot;, 
+    values_from = &quot;value&quot;)
+
+head(merged1)</code></pre>
+<pre><code>## # A tibble: 6 x 11
+##   Plant Month   Day  Year Treatment  Plot Quadrat Type  Height     X     Y
+##   &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     7    18  2019         1     2       7 D        0     0     0  
+## 2     1     7    18  2019         1     2       7 G        6.8   3.7   4  
+## 3     2     7    18  2019         1     2       7 D        5    23    38  
+## 4     2     7    18  2019         1     2       7 G        8    16.5  28.4
+## 5     3     7    19  2019         1     2       7 D        4.6  11.4  11.8
+## 6     3     7    19  2019         1     2       7 G        1.4   7.7   8</code></pre>
+<p>On my double-wide merged dataset, I used pivot_longer() to select double-wide columns containing the underscore (e.g D_Height). They were moved into one column called ‘name’, then separated into two columns Type (D,G) and Variable (Height, X, Y). Then pivot_wider() was used to make each variable its own column with values under it. The tidyied dataset was called “merged1”.</p>
+<pre class="r"><code># Wrangling
+iof &lt;- merged1 %&gt;% select(-Month, -Day, -Year, -Plot, -Quadrat)
+iof1 &lt;- iof %&gt;% mutate(Area = pi * (X/2) * (Y/2))
+iof1 %&gt;% summarize_all(n_distinct)</code></pre>
+<pre><code>## # A tibble: 1 x 7
+##   Plant Treatment  Type Height     X     Y  Area
+##   &lt;int&gt;     &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
+## 1   487         5     2    134   305   341   837</code></pre>
+<pre class="r"><code>iof1 %&gt;% filter(Type == &quot;D&quot;) %&gt;% arrange(desc(Area))</code></pre>
+<pre><code>## # A tibble: 487 x 7
+##    Plant Treatment Type  Height     X     Y   Area
+##    &lt;int&gt;     &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+##  1   457         5 D        7.7   113  125  11094.
+##  2   270         3 D        4.6   100  124   9739.
+##  3   272         3 D       10      93  116.  8458.
+##  4   401         4 D        5.5    78  125   7658.
+##  5   139         2 D        6.5    96   97   7314.
+##  6   284         3 D        8.2    90  100   7069.
+##  7   461         5 D        4      82  106   6827.
+##  8   403         4 D        7      78  111   6800.
+##  9   381         4 D        4      68  124   6622.
+## 10   394         4 D        9      85   97   6476.
+## # … with 477 more rows</code></pre>
+<pre class="r"><code>iof1 %&gt;% filter(Type == &quot;G&quot;) %&gt;% arrange(desc(Area))</code></pre>
+<pre><code>## # A tibble: 487 x 7
+##    Plant Treatment Type  Height     X     Y   Area
+##    &lt;int&gt;     &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+##  1   457         5 G       19   108     125 10603.
+##  2   272         3 G       15    87     117  7995.
+##  3   270         3 G       19.5  81     124  7889.
+##  4   139         2 G       13.5  94      95  7014.
+##  5   401         4 G       13.6  72     115  6503.
+##  6   403         4 G       11    74     107  6219.
+##  7   381         4 G        8.2  66     119  6169.
+##  8   461         5 G       18    76.5   100  6008.
+##  9   276         3 G       13    80      91  5718.
+## 10   209         2 G       13    73.3    95  5469.
+## # … with 477 more rows</code></pre>
+<pre class="r"><code>D &lt;- iof1 %&gt;% filter(Type == &quot;D&quot;)
+G &lt;- iof1 %&gt;% filter(Type == &quot;G&quot;)
+
+# Overall
+iof1 %&gt;% filter(Type == &quot;D&quot;) %&gt;% summarize(AD_mean_height = mean(Height), 
+    AD_med_height = median(Height), AD_mean_area = mean(Area), 
+    AD_med_area = median(Area), AD_mean_X = mean(X), AD_med_X = median(X), 
+    AD_mean_Y = mean(Y), AD_med_Y = median(Y))</code></pre>
+<pre><code>## # A tibble: 1 x 8
+##   AD_mean_height AD_med_height AD_mean_area AD_med_area AD_mean_X AD_med_X
+##            &lt;dbl&gt;         &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1           4.74           4.5         885.        256.      22.3     15.7
+## # … with 2 more variables: AD_mean_Y &lt;dbl&gt;, AD_med_Y &lt;dbl&gt;</code></pre>
+<pre class="r"><code>iof1 %&gt;% filter(Type == &quot;G&quot;) %&gt;% summarize(AG_mean_height = mean(Height), 
+    AG_med_height = median(Height), AG_mean_area = mean(Area), 
+    AG_med_area = median(Area), AG_mean_X = mean(X), AG_med_X = median(X), 
+    AG_mean_Y = mean(Y), AG_med_Y = median(Y))</code></pre>
+<pre><code>## # A tibble: 1 x 8
+##   AG_mean_height AG_med_height AG_mean_area AG_med_area AG_mean_X AG_med_X
+##            &lt;dbl&gt;         &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1           9.62             9         655.        119.      17.2     10.2
+## # … with 2 more variables: AG_mean_Y &lt;dbl&gt;, AG_med_Y &lt;dbl&gt;</code></pre>
+<pre class="r"><code>cor(D$Area, G$Height)</code></pre>
+<pre><code>## [1] 0.4617742</code></pre>
+<pre class="r"><code>cor(D$Area, G$Area)</code></pre>
+<pre><code>## [1] 0.988674</code></pre>
+<pre class="r"><code>cor(D$Height, G$Height)</code></pre>
+<pre><code>## [1] 0.5171023</code></pre>
+<pre class="r"><code># Dune per Treatment
+iof1 %&gt;% filter(Type == &quot;D&quot;) %&gt;% group_by(Treatment) %&gt;% summarize(D_mean_height = mean(Height), 
+    D_med_height = median(Height), D_min_height = min(Height), 
+    D_max_height = max(Height), D_n = n(), D_sd_height = sd(Height), 
+    D_var_height = var(Height), D_iqr_height = IQR(Height), D_quan70_height = quantile(Height, 
+        0.7))</code></pre>
+<pre><code>## # A tibble: 5 x 10
+##   Treatment D_mean_height D_med_height D_min_height D_max_height   D_n
+##       &lt;int&gt;         &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt; &lt;int&gt;
+## 1         1          4.06         4             0            9.6   135
+## 2         2          4.78         4.5           1           11      99
+## 3         3          4.78         4.45          1.5         10      92
+## 4         4          5.48         5.5           1.2         11      81
+## 5         5          5.03         5             1.7         10.3    80
+## # … with 4 more variables: D_sd_height &lt;dbl&gt;, D_var_height &lt;dbl&gt;,
+## #   D_iqr_height &lt;dbl&gt;, D_quan70_height &lt;dbl&gt;</code></pre>
+<pre class="r"><code>iof1 %&gt;% filter(Type == &quot;D&quot;) %&gt;% group_by(Treatment) %&gt;% summarize(D_mean_area = mean(Area), 
+    D_med_area = median(Area), D_min_area = min(Area), D_max_area = max(Area), 
+    D_n = n(), D_sd_area = sd(Area), D_var_area = var(Area), 
+    D_iqr_area = IQR(Area), D_quan70_area = quantile(Area, 0.7))</code></pre>
+<pre><code>## # A tibble: 5 x 10
+##   Treatment D_mean_area D_med_area D_min_area D_max_area   D_n D_sd_area
+##       &lt;int&gt;       &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt; &lt;int&gt;     &lt;dbl&gt;
+## 1         1        412.       144.       0         5676.   135      725.
+## 2         2        791.       306.      14.1       7314.    99     1357.
+## 3         3       1009.       214.      19.6       9739.    92     1798.
+## 4         4       1304.       507.       8.25      7658.    81     1950.
+## 5         5       1233.       475.      22.0      11094.    80     1821.
+## # … with 3 more variables: D_var_area &lt;dbl&gt;, D_iqr_area &lt;dbl&gt;,
+## #   D_quan70_area &lt;dbl&gt;</code></pre>
+<pre class="r"><code>iof1 %&gt;% filter(Type == &quot;D&quot;) %&gt;% group_by(Treatment) %&gt;% summarize(D_mean_X = mean(X), 
+    D_med_X = median(X), D_min_X = min(X), D_max_X = max(X), 
+    D_nx = n(), D_sd_X = sd(X), D_var_X = var(X), D_iqr_X = IQR(X), 
+    D_quan70_X = quantile(X, 0.7))</code></pre>
+<pre><code>## # A tibble: 5 x 10
+##   Treatment D_mean_X D_med_X D_min_X D_max_X  D_nx D_sd_X D_var_X D_iqr_X
+##       &lt;int&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1         1     16.0    12         0    74.5   135   12.4    154.    12.8
+## 2         2     22.1    17.4       4    96      99   17.6    311.    16.4
+## 3         3     23.6    14.2       5   100      92   21.1    444.    26.0
+## 4         4     26.4    20         3    85      81   21.0    440.    22.5
+## 5         5     27.3    20.5       5   113      80   20.5    421.    21.4
+## # … with 1 more variable: D_quan70_X &lt;dbl&gt;</code></pre>
+<pre class="r"><code>iof1 %&gt;% filter(Type == &quot;D&quot;) %&gt;% group_by(Treatment) %&gt;% summarize(D_mean_Y = mean(Y), 
+    D_med_Y = median(Y), D_min_Y = min(Y), D_max_Y = max(Y), 
+    D_ny = n(), D_sd_Y = sd(Y), D_var_Y = var(Y), D_iqr_Y = IQR(Y), 
+    D_quan70_Y = quantile(Y, 0.7))</code></pre>
+<pre><code>## # A tibble: 5 x 10
+##   Treatment D_mean_Y D_med_Y D_min_Y D_max_Y  D_ny D_sd_Y D_var_Y D_iqr_Y
+##       &lt;int&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1         1     20.9    15.5     0        97   135   16.7    278.    18.6
+## 2         2     29.0    23       4.5     105    99   22.2    493.    21.5
+## 3         3     31.1    19.8     5       124    92   27.7    765.    33.8
+## 4         4     38.2    26.6     3.5     125    81   33.7   1133.    39.8
+## 5         5     38.9    30       5.6     125    80   28.6    817.    37.7
+## # … with 1 more variable: D_quan70_Y &lt;dbl&gt;</code></pre>
+<pre class="r"><code># Grass per Treatment
+iof1 %&gt;% filter(Type == &quot;G&quot;) %&gt;% group_by(Treatment) %&gt;% summarize(G_mean_height = mean(Height), 
+    G_med_height = median(Height), G_min_height = min(Height), 
+    G_max_height = max(Height), G_sd_height = sd(Height), G_var_height = var(Height), 
+    G_iqr_height = IQR(Height), G_quan70_height = quantile(Height, 
+        0.7))</code></pre>
+<pre><code>## # A tibble: 5 x 9
+##   Treatment G_mean_height G_med_height G_min_height G_max_height G_sd_height
+##       &lt;int&gt;         &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;
+## 1         1          8.31          8            1           24.6        4.80
+## 2         2          8.32          7.2          1.5         23          4.56
+## 3         3          9.98          9            1.3         22          5.12
+## 4         4         10.9          11            1.5         30          5.87
+## 5         5         11.7          11.9          1           26          5.39
+## # … with 3 more variables: G_var_height &lt;dbl&gt;, G_iqr_height &lt;dbl&gt;,
+## #   G_quan70_height &lt;dbl&gt;</code></pre>
+<pre class="r"><code>iof1 %&gt;% filter(Type == &quot;G&quot;) %&gt;% group_by(Treatment) %&gt;% summarize(G_mean_area = mean(Area), 
+    G_med_area = median(Area), G_min_area = min(Area), G_max_area = max(Area), 
+    G_sd_area = sd(Area), G_var_area = var(Area), G_iqr_area = IQR(Area), 
+    G_quan70_area = quantile(Area, 0.7))</code></pre>
+<pre><code>## # A tibble: 5 x 9
+##   Treatment G_mean_area G_med_area G_min_area G_max_area G_sd_area G_var_area
+##       &lt;int&gt;       &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;
+## 1         1        244.       64.3       1.98      4355.      500.    249542.
+## 2         2        587.      123.        7.07      7014.     1211.   1467731.
+## 3         3        773.      105.        5.36      7995.     1545.   2386294.
+## 4         4       1022.      172.        3.61      6503.     1691.   2860099.
+## 5         5        925.      272.        9.05     10603.     1603.   2569877.
+## # … with 2 more variables: G_iqr_area &lt;dbl&gt;, G_quan70_area &lt;dbl&gt;</code></pre>
+<pre class="r"><code>iof1 %&gt;% filter(Type == &quot;G&quot;) %&gt;% group_by(Treatment) %&gt;% summarize(G_mean_X = mean(X), 
+    G_med_X = median(X), G_min_X = min(X), G_max_X = max(X), 
+    G_nx = n(), G_sd_X = sd(X), G_var_X = var(X), G_iqr_X = IQR(X), 
+    G_quan70_X = quantile(X, 0.7))</code></pre>
+<pre><code>## # A tibble: 5 x 10
+##   Treatment G_mean_X G_med_X G_min_X G_max_X  G_nx G_sd_X G_var_X G_iqr_X
+##       &lt;int&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1         1     11.5     8       1.4    85.7   135   11.1    123.    8.25
+## 2         2     16.9    10.2     2.6    94      99   17.4    302.   14   
+## 3         3     18.7     9.1     2.2    87      92   19.4    376.   22.4 
+## 4         4     21.1    12       2      78      81   19.7    390.   22.7 
+## 5         5     21.7    13.6     3.2   108      80   19.2    367.   22.2 
+## # … with 1 more variable: G_quan70_X &lt;dbl&gt;</code></pre>
+<pre class="r"><code>iof1 %&gt;% filter(Type == &quot;G&quot;) %&gt;% group_by(Treatment) %&gt;% summarize(G_mean_Y = mean(Y), 
+    G_med_Y = median(Y), G_min_Y = min(Y), G_max_Y = max(Y), 
+    G_ny = n(), G_sd_Y = sd(Y), G_var_Y = var(Y), G_iqr_Y = IQR(Y), 
+    G_quan70_Y = quantile(Y, 0.7))</code></pre>
+<pre><code>## # A tibble: 5 x 10
+##   Treatment G_mean_Y G_med_Y G_min_Y G_max_Y  G_ny G_sd_Y G_var_Y G_iqr_Y
+##       &lt;int&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1         1     16.1    11       1.8     89    135   14.1    199.    15.4
+## 2         2     23.9    15.5     3       95     99   21.3    456.    20.5
+## 3         3     26.2    13.2     3      124     92   27.0    730.    32.2
+## 4         4     32.9    19       2.3    124.    81   33.2   1101.    36.3
+## 5         5     33.1    23.4     3.6    125     80   28.2    796.    35.9
+## # … with 1 more variable: G_quan70_Y &lt;dbl&gt;</code></pre>
+<p>All six dplyr functions were used to produce summary statistics of mean, median, min, max, n, IQR, sd, quantile, cor, and var. Mutate was used to generate a new column called “Area” for both Dunes and Grasses. The equation used to calculate the area was the area of an ellipse, which was A=(pi)(radiusX)(radiusY). The X and Y columns had to be divided in 2 for the radius.</p>
+<p>The four numeric variables were Height, X, Y, and Area. The two categorical variables were Type and Treatment. The data showed the highest correlation between Dune Area and Grass Area. Dune heights ranged from 0-10.3 cm, Dune areas ranged from 0-11094 cm^2, Grass heights ranged from 1-26 cm, and Grass areas ranged from 1.98-10603 cm^2. The number of plants per treatment decreased when treatment increased, meaning as rainfall increases, the patchiness of the plot decreases. As the treatment increased, the dune mean X and Y increased and the dune mean height and area increased as well except decreased a little at treatment 5. As the treatment increased, the grass mean height, X, and Y increased, and the grass mean area increased as well except decreased a little at treatment 5.</p>
+<pre class="r"><code># Visualizing correlation heat map
+iof1 %&gt;% select_if(is.numeric) %&gt;% cor %&gt;% as.data.frame %&gt;% 
+    rownames_to_column %&gt;% pivot_longer(-1) %&gt;% ggplot(aes(rowname, 
+    name, fill = value)) + geom_tile() + geom_text(aes(label = round(value, 
+    2))) + xlab(&quot;&quot;) + ylab(&quot;&quot;) + ggtitle(&quot;Correlation Heatmap&quot;)</code></pre>
+<p><img src="/jung_project1_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(iof1, aes(x = Treatment, y = Area, fill = Type)) + geom_bar(stat = &quot;summary&quot;, 
+    fun.y = &quot;mean&quot;, position = &quot;dodge&quot;) + geom_errorbar(stat = &quot;summary&quot;, 
+    position = &quot;dodge&quot;) + scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) + 
+    theme_minimal() + scale_fill_manual(&quot;Type&quot;, values = c(D = &quot;#CC9966&quot;, 
+    G = &quot;#33CC66&quot;)) + ggtitle(&quot;Area of Dune and Grass by Treatment&quot;) + 
+    xlab(&quot;Treatment&quot;) + ylab(&quot;Mean Area (cm^2)&quot;)</code></pre>
+<p><img src="/jung_project1_files/figure-html/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>p &lt;- ggplot(iof1, aes(X, Y)) + theme_minimal()
+p + geom_point(aes(color = factor(Type)), alpha = 0.9) + scale_color_brewer(palette = &quot;Paired&quot;) + 
+    ggtitle(&quot;Dune and Grass Characteristics&quot;) + xlab(&quot;Width (cm)&quot;) + 
+    ylab(&quot;Length (cm)&quot;)</code></pre>
+<p><img src="/jung_project1_files/figure-html/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The first visualization is the correlation heat map. It shows that some of the highest correlations are between Area and X (r=0.94), X and Y (r=0.92), and Area and Y (r=0.91). The lowest correlation is Height and Area (r=0.28).</p>
+<p>The second visualization is a bar chart showing the mean area of the dunes and grass by treatment. It shows that as the dune area increases, the grass area increases as well. The highest mean area of the dunes and grasses are found in Treatment 4 and then decreases by approximately 50 cm^2 for Treatment 5. The error bars become larger as Treatment increases.</p>
+<p>The third visualization is a scatterplot showing the width and length of dunes and grasses. In general, it seems that as the width increases, the length increases for both dunes and grasses. However, at the top of the plot, there are plants where the lengths are large, but have varying widths. It also seems that there are two outliers at about (15,90) and (84,63).</p>
+<pre class="r"><code># Dimentionality Reduction
+library(cluster)
+
+clust_dat &lt;- iof1 %&gt;% select(Height, X, Y, Area)
+sil_width &lt;- vector()
+for (i in 2:10) {
+    pam_fit &lt;- iof1 %&gt;% select(-Plant, -Treatment, -Type) %&gt;% 
+        pam(i)
+    sil_width[i] &lt;- pam_fit$silinfo$avg.width
+}
+ggplot() + geom_line(aes(x = 1:10, y = sil_width)) + scale_x_continuous(name = &quot;k&quot;, 
+    breaks = 1:10)</code></pre>
+<p><img src="/jung_project1_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pam1 &lt;- clust_dat %&gt;% pam(k = 2)
+pam1</code></pre>
+<pre><code>## Medoids:
+##       ID Height    X    Y      Area
+## [1,] 499      6 11.4 14.5  129.8263
+## [2,] 872     15 63.0 78.0 3859.4466
+## Clustering vector:
+##   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2
+##  [38] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 1
+##  [75] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+##  [ reached getOption(&quot;max.print&quot;) -- omitted 874 entries ]
+## Objective function:
+##    build     swap 
+## 419.4057 416.2288 
+## 
+## Available components:
+##  [1] &quot;medoids&quot;    &quot;id.med&quot;     &quot;clustering&quot; &quot;objective&quot;  &quot;isolation&quot; 
+##  [6] &quot;clusinfo&quot;   &quot;silinfo&quot;    &quot;diss&quot;       &quot;call&quot;       &quot;data&quot;</code></pre>
+<pre class="r"><code>pamclust &lt;- clust_dat %&gt;% mutate(cluster = as.factor(pam1$clustering))
+pamclust %&gt;% ggplot(aes(Area, Height, color = cluster)) + geom_point() + 
+    ggtitle(&quot;PAM Area vs. Height&quot;) + xlab(&quot;Area (cm^2)&quot;) + ylab(&quot;Height (cm)&quot;)</code></pre>
+<p><img src="/jung_project1_files/figure-html/unnamed-chunk-6-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pamclust %&gt;% group_by(cluster) %&gt;% summarize_if(is.numeric, mean, 
+    na.rm = T)</code></pre>
+<pre><code>## # A tibble: 2 x 5
+##   cluster Height     X     Y  Area
+##   &lt;fct&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 1         6.79  14.6  20.6  338.
+## 2 2        10.3   61.9  86.2 4308.</code></pre>
+<pre class="r"><code>iof1[pam1$id.med, ]</code></pre>
+<pre><code>## # A tibble: 2 x 7
+##   Plant Treatment Type  Height     X     Y  Area
+##   &lt;int&gt;     &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1   250         3 D          6  11.4  14.5  130.
+## 2   436         5 G         15  63    78   3859.</code></pre>
+<pre class="r"><code>library(GGally)
+ggpairs(pamclust, columns = 1:4, aes(color = cluster))</code></pre>
+<p><img src="/jung_project1_files/figure-html/unnamed-chunk-6-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(pam1, which = 2)</code></pre>
+<p><img src="/jung_project1_files/figure-html/unnamed-chunk-6-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The number of clusters I chose for the PAM analysis was k=2 because the mean silhouette width at k=2 was the highest at approximately 0.86. After running the analysis for Area and Height, it showed that the two medoids were at (130, 6) and (3859,15). The pairwise combination of all 4 variables showed a strong positive correlation between Area and X and Area and Y for Cluster 1 and Cluster 2. The width and length would need to increase for area to increase as well. There are weak negative correlations for Height and X and Height and Area for Cluster 2. In the scatterplot of those negative correlations, it shows that the points seem to increase then decrease, which is similar to the observations made in the wrangling portion where some numeric variables seem to increase with increasing Treatment up to Treatment 4 but then decrease a little bit at Treatment 5. Cluster 2 seems to be the values with higher Height and Area, which could mean that the clusters are separated based on Treatment of reduced and increased rainfall. The plot of mean silhouette width (0.82) showed that a strong structure has been found.</p>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

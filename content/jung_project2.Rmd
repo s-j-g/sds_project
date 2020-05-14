@@ -1,0 +1,280 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting'
+author: "Jieun Jung (Sally) jj35565"
+date: '5/2/20'
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+```{r}
+#0. Dataset
+setwd("/Users/SJ/Desktop")
+iof <- read.csv("LTREB2_GrassIOF_DataV2.csv")
+iof <- iof %>% mutate(D_Area = pi*(D_X/2)*(D_Y/2)) %>% mutate(G_Area = pi*(G_X/2)*(G_Y/2)) %>% select(Treatment, D_Area, D_Height, G_Area, G_Height) %>% mutate(y=ifelse(iof$Treatment==3,F,T)) %>% mutate(Treatment= recode(Treatment,"T1","T2","T3","T4","T5"))
+head(iof)
+```
+
+Introduction:
+
+The dataset I chose is a subset of the dataset I used for Project 1. The variables I will be using in this project are Dune area (cm^2) and height (cm), Grass area (cm^2) and height (cm), Treatment (groups 1-5), and a binary variable where Control group = False and the Treatment groups = True. There are 487 observations in this dataset. 
+
+The data was collected by myself last summer when I was a REU intern. The lab I was with had rainfall manipulation experiments set up at the Jornada Long Term Ecological Research site in New Mexico to observe how changing rainfall would impact vegetation. Plots in the rainfall manipulation experiments consisted of plastic shingle roofs that blocked out a percentage of rain to simulate reduced rainfall, and the blocked water was collected and diverted to another plot through a sprinkler system to simulate increased rainfall. In the data, Treatment 1 represents reduced rainfall by 80% (-80%), Treatment 2 represents -50%, Treatment 3 represents the Control, Treatment 4 represents increased rainfall by 50% (+50%), and Treatment 5 represents +80%.
+
+```{r}
+#1. MANOVA
+man1<-manova(cbind(D_Area, D_Height, G_Area, G_Height)~Treatment, data=iof)
+summary(man1)
+summary.aov(man1)
+pairwise.t.test(iof$D_Area,iof$Treatment,p.adj="none")
+pairwise.t.test(iof$D_Height,iof$Treatment,p.adj="none")
+pairwise.t.test(iof$G_Area,iof$Treatment,p.adj="none")
+pairwise.t.test(iof$G_Height,iof$Treatment,p.adj="none")
+0.05/45
+1-(0.95^45)
+#multivariate normality
+ggplot(iof, aes(x = D_Area, y = D_Height)) +
+geom_point(alpha = .5) + geom_density_2d(h=2) + facet_wrap(~Treatment)
+#homogeneity of covariance
+covmats<-iof%>%group_by(Treatment)%>%do(covs=cov(.[2:3]))
+for(i in 1:3){print(as.character(covmats$Treatment[i])); print(covmats$covs[i])}
+```
+
+The MANOVA test was significant, meaning at least one of the dependent variables (Dune Area, Dune Height, Grass Area, Grass Height) their means differ by Treatment. The ANOVA test was significant, meaning that for all the dependent variables (DV), at least one Treatment differs. 
+
+Based on 45 tests (1 MANOVA, 4 ANOVA, 40 t-tests), the bonferroni correction is a = 0.0011. For Dune Area, Grass Area, and Dune Height, the mean of Treatment 1 is significantly different from Treatment 4 and 5. For Grass Height, the mean of Treatment 1 is significantly different from Treatment 4 and 5, and the mean of Treatment 2 is significantly different from Treatment 4 and 5. 
+
+Based on the graphs for multilinearity and matrices for homogeneity, it is most likely that assumptions have not been met. The type I error rate was 90%.  
+
+```{r}
+#2. Randomization Test (PERMANOVA)
+library(vegan)
+dists<-iof%>%select(D_Area, D_Height, G_Area, G_Height)%>%dist()
+adonis(dists~Treatment,data=iof)
+
+iof %>% group_by(Treatment) %>% summarize(n()) %>% pull
+#compute observed F
+SST<- sum(dists^2)/487
+SSW<-iof%>%group_by(Treatment)%>%select(D_Area,D_Height,G_Area,G_Height)%>%
+do(d=dist(.[2:3],"euclidean"))%>%ungroup()%>%
+summarize(sum(d[[1]]^2)/135 + sum(d[[2]]^2)/99+ sum(d[[3]]^2)/92 + sum(d[[4]]^2)/81 + sum(d[[5]]^2)/80)%>%pull
+F_obs<-((SST-SSW)/4)/(SSW/482) #observed F statistic
+# compute null distribution for F
+Fs<-replicate(1000,{
+new<-iof%>%mutate(Treatment=sample(Treatment)) #permute the species vector
+SSW<-new%>%group_by(Treatment)%>%select(D_Area,D_Height,G_Area,G_Height)%>%
+do(d=dist(.[2:3],"euclidean"))%>%ungroup()%>%
+summarize(sum(d[[1]]^2)/135 + sum(d[[2]]^2)/99+ sum(d[[3]]^2)/92 +
+sum(d[[4]]^2)/81 + sum(d[[5]]^2)/80)%>%pull
+((SST-SSW)/4)/(SSW/482) #calculate new F on randomized data
+})
+quantile(Fs,.95)
+hist(Fs,prob = T); abline(v=F_obs, col="red", add=T)
+
+```
+
+The null hypothesis is that mean sizes of Dune Area, Dune Height, Grass Area, and Grass Height are the same for each Treatment. The alternative hypothesis is that for at least one dependent variable, the mean sizes differ by Treatment. PERMANOVA was significant (p=0.001).  
+
+```{r}
+#3. Linear Regression 
+library(sandwich)
+library(lmtest)
+
+iof$D_Height_c <- iof$D_Height - mean(iof$D_Height)
+iof$G_Area_c <- iof$G_Area - mean(iof$G_Area)
+
+fit<-lm(D_Area ~ D_Height_c*G_Area_c, data=iof)
+summary(fit)
+
+resids<-fit$residuals; fitvals<-fit$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, col="red")
+bptest(fit) #testing heteroskedasticity assumption: Ho: homoskedsastic
+ggplot()+geom_histogram(aes(resids),bins=20)
+ggplot()+geom_qq(aes(sample=resids))+geom_qq_line(aes(sample=resids), color='red')
+ks.test(resids, "pnorm", sd=sd(resids))
+
+#robust standard errors
+coeftest(fit, vcov = vcovHC(fit))[,1:2]
+14.49-10.61
+6.89-4.95
+
+#Plot regression
+fit<-lm(D_Area ~ D_Height_c*G_Area_c, data=iof)
+new1<-iof
+new1$D_Height_c<-mean(iof$D_Height_c)
+new1$mean<-predict(fit,new1)
+new1$D_Height_c<-mean(iof$D_Height_c)+sd(iof$D_Height_c)
+new1$plus.sd<-predict(fit,new1)
+new1$D_Height_c<-mean(iof$D_Height_c)-sd(iof$D_Height_c)
+new1$minus.sd<-predict(fit,new1)
+newint<-new1%>%select(D_Area,G_Area_c,mean,plus.sd,minus.sd)%>%gather(D_Height,value,-D_Area,-G_Area_c)
+
+mycols<-c("#619CFF","#F8766D","#00BA38")
+names(mycols)<-c("-1 sd","mean","+1 sd")
+mycols=as.factor(mycols)
+
+ggplot(iof,aes(G_Area_c,D_Area),group=mycols)+geom_point()+geom_line(data=new1,aes(y=mean,color="mean"))+geom_line(data=new1,aes(y=plus.sd,color="+1 sd"))+geom_line(data=new1,aes(y=minus.sd,color="-1 sd"))+scale_color_manual(values=mycols)+labs(color="Age (cont)")+theme(legend.position=c(.9,.2))
+```
+
+Assumptions of linearity, normality, and homoskedacity are not met.
+
+Intercept means that the Dune Area is 907.76 cm^2 when when Dune Height and Grass Area is equal to their means. Holding Grass Area constant, the slope of Dune Height is 34.98 (one cm increase in Dune Height increases Dune Area by 34.98) Holding Dune Height constant, the slope of Grass Area is 1.16 (one cm^2 increase in Grass Area increases Dune Area by 1.16). For the interaction, as Dune Height increases, there is a weak linear relationship between Dune Area and Grass Area. For every cm increase in Dune Height, the slope for Grass Area goes down by 0.021. 
+
+All variables are significant. Controlling for Grass Area, Dune Height has an effect on Dune Area. Controlling for Dune Height, Grass Area has an effect on Dune Area. 98% of the variation in the outcome is explained by my model. The effect of Dune Height on Dune Area depends on Grass Area. There is not much difference before and after robust SE. After robust SE, SE increased by 3.9 for the Intercept and SE increased by 1.9 for Dune Height. 
+
+```{r}
+#4. Bootstrap
+fit1<-lm(D_Area ~ D_Height_c*G_Area_c, data=iof)
+
+#sample people/rows with replacement
+boot_dat<-iof[sample(nrow(iof),replace=TRUE),]
+samp_distn<-replicate(5000, {
+  boot_dat<-boot_dat<-iof[sample(nrow(iof),replace=TRUE),]
+  fit1<-lm(D_Area ~ D_Height_c*G_Area_c, data=boot_dat)
+  coef(fit1)
+})
+## Estimated SEs
+samp_distn%>%t%>%as.data.frame%>%summarize_all(sd)
+```
+
+After bootstrapping, the SE values for all the variables (Intercept, Dune Height, Grass Area, Interaction) decreased. Because SE decreased, p-value would decrease as well, which would increase the chances of the variable turning significant. 
+
+```{r}
+#5. Logistic Regression 
+#Control = False (0), Treatment = True (1)
+lfit<-glm(y~D_Area+G_Height,data=iof, family='binomial')
+coeftest(lfit)
+coef(lfit)%>%exp%>%round(5)%>%data.frame%>%pull
+
+iof$prob<-predict(lfit,type="response") #get predicted probabilities
+iof$predicted<-ifelse(iof$prob>.8,"True","False") #predicted outcome
+
+#confusion matrix
+table(prediction=iof$predicted,truth=iof$y)%>%addmargins
+(20+332)/487 #accuracy
+332/395 #sensitivity 
+20/92 #specificity
+332/404 #recall
+
+iof <- iof %>% mutate(outcome=ifelse(y=="TRUE","Treatment","Control"))
+iof$logit<-predict(lfit) #get predicted log-odds
+iof$outcome<-factor(iof$outcome,levels=c("Treatment","Control"))
+ggplot(iof,aes(logit, fill=outcome))+geom_density(alpha=.3)+
+  geom_vline(xintercept=0,lty=2)
+
+library(plotROC)
+iof <- iof %>% mutate(y1=ifelse(y=="TRUE",1,0))
+ROCplot<-ggplot(iof)+geom_roc(aes(d=y1,m=prob), n.cuts=0)
+ROCplot
+calc_auc(ROCplot)
+
+#10 fold CV
+class_diag <- function(probs,truth){
+#CONFUSION MATRIX: CALCULATE ACCURACY, TPR, TNR, PPV
+tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+acc=sum(diag(tab))/sum(tab)
+sens=tab[2,2]/colSums(tab)[2]
+spec=tab[1,1]/colSums(tab)[1]
+ppv=tab[2,2]/rowSums(tab)[2]
+if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+#CALCULATE EXACT AUC
+ord<-order(probs, decreasing=TRUE)
+probs <- probs[ord]; truth <- truth[ord]
+TPR=cumsum(truth)/max(1,sum(truth))
+FPR=cumsum(!truth)/max(1,sum(!truth))
+dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+n <- length(TPR)
+auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+data.frame(acc,sens,spec,ppv,auc)
+} 
+
+set.seed(1234)
+k=10 #choose number of folds
+data<-iof[sample(nrow(iof)),] #randomly order rows
+folds<-cut(seq(1:nrow(iof)),breaks=k,labels=F) #create folds
+diags<-NULL
+for(i in 1:k){
+## Create training and test sets
+train<-data[folds!=i,]
+test<-data[folds==i,]
+truth<-test$y1 ## Truth labels for fold i
+## Train model on training set (all but fold i)
+lfit<-glm(y~D_Area+G_Height,data=train,family="binomial")
+## Test model on test set (fold i)
+probs<-predict(lfit,newdata = test,type="response")
+## Get diagnostics for fold i
+diags<-rbind(diags,class_diag(probs,truth))
+}
+summarize_all(diags,mean)
+```
+
+Controlling for Grass Height, every unit increase in Dune Area multiplies odds by a factor of 0.99996. Controlling for Dune Area, every unit increase in Grass Height multiplies odds by a factor of 0.99053. The intercept of 4.91 is the predicted odds of Treatment when D_Area and G_Height is 0. 
+
+The probability threshold was moved from 0.5 to 0.8 because at 0.5, all cases were being predicted as Treatment. The accuracy is 0.72, sensitivity is 0.84, specificity is 0.22, and recall is 0.82. The accuracy (proportion of correctly classified cases) is okay but not great. Sensitivity (proportion of Treatment correctly classified) is fairly good. Specificity (proportion of Control correctly classified) is not good. Recall (the proportion classified as Treatment that actually are Treatment) is fairly good. 
+
+Low AUC (0.52) indicates that the model is not predicting well and classified as a bad model. ROC curve indicates that the model is giving chance predictions and Sensitivity=Specificity. 
+
+After a 10-fold CV, accuracy is 0.81, sensitivity is 1, and recall is 0.81.
+
+```{r}
+#6. LASSO Regression
+library(glmnet)
+las <- iof %>% select(Treatment, D_Area, D_Height, G_Area, G_Height, outcome)
+
+y<-as.matrix(las$outcome) #grab response
+x<-model.matrix(outcome~.,data=las)[,-1] #grab predictors
+head(x)
+x<-scale(x)
+
+cv<-cv.glmnet(x,y,family= "binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+
+#10 fold CV
+las <- iof %>% select(Treatment, D_Area, D_Height, G_Area, G_Height, outcome, y1)
+set.seed(1234)
+k=10 #choose number of folds
+data<-las[sample(nrow(las)),] #randomly order rows
+folds<-cut(seq(1:nrow(las)),breaks=k,labels=F) #create folds
+diags<-NULL
+for(i in 1:k){
+## Create training and test sets
+train<-data[folds!=i,]
+test<-data[folds==i,]
+truth<-test$y1 ## Truth labels for fold i
+## Train model on training set (all but fold i)
+lafit<-glm(y1~Treatment,data=train,family="binomial")
+## Test model on test set (fold i)
+probs<-predict(lafit,newdata = test,type="response")
+## Get diagnostics for fold i
+diags<-rbind(diags,class_diag(probs,truth))
+}
+summarize_all(diags,mean)
+```
+
+The LASSO regression showed that the best variable to predict outcome is Treatment 3. The accuracy is 1, which is better than the logistic accuracy of 0.72. It makes sense that Treatment 3 best predicts the outcome (control or treatment) and results in high accuracy because Treatment 3 are the control cases and any other cases that is not Treatment3 is considered to be classified as Treatment. 

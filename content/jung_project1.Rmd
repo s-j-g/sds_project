@@ -1,0 +1,173 @@
+---
+title: "Project 1"
+author: "Sally Jung (jj35565)"
+date: "3/15/2020"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
+```
+
+```{r}
+#Data sets
+setwd("/Users/SJ/Desktop")
+dune <- read.csv("GrassIOF_Dune_Data_sds.csv")
+grass <- read.csv("GrassIOF_Grass_Data_sds.csv")
+head(dune)
+head(grass)
+```
+
+Introduction: 
+The two datasets I have chosen were collected by me last summer when I was a REU intern. The lab I was with had rainfall manipulation experiments set up at the Jornada Long Term Ecological Research site in New Mexico to observe how changing rainfall would impact vegetation. Plots in the rainfall manipulation experiments consisted of plastic shingle roofs that blocked out a percentage of rain to simulate reduced rainfall, and the blocked water was collected and diverted to another plot through a sprinkler system to simulate increased rainfall. In the data, Treatment 1 represents reduced rainfall by 80% (-80%), Treatment 2 represents -50%, Treatment 3 represents the control, Treatment 4 represents increased rainfall by 50% (+50%), and Treatment 5 represents +80%. For each plot, 2 quadrats were used to collected data, which turned out to be a total of 80 quadrats (40 plots x 2 quadrats). I collected data on the characteristics of the Black Gramma grasses and their sandy dunes that were in the plots. I collected the height, width (X), length (Y) of the dunes, which was Dataset 1, and the height, width (X), length (Y) of the grasses on the dunes, which was Dataset 2 in cm. I expect that with increased rainfall, grass characterists and dune length and width will increase. With this data, I hope to make a poster and present it at a conference.
+
+```{R}
+#Joining
+library(ggplot2)
+library(magrittr)
+library(dplyr)
+
+merged <- dune %>% left_join(grass)
+```
+
+I chose a left join in order to keep the dune dataframe on the left and add the grass dataframe to the right where there were matches. They were joined by Plant, Month, Day, Year, Treatment, Plot, and Quadrat. No cases were dropped since each dataframe had the same number of plants and had data for each characteristic. The joined dataset was called "merged". I joined the datasets without tidying them because I could not figure out how to get the joined dataset tidy. However, the next step shows how I tidyied my untidyied joined dataset. 
+
+```{R}
+#Tidying
+library(tidyverse)
+
+merged%>%pivot_longer(cols=c('D_Height':'G_Y'))
+
+merged1 <- merged%>%pivot_longer(contains("_"))%>%
+separate(name,into=c("Type","Variable"))%>%
+pivot_wider(names_from="Variable",values_from="value")
+
+head(merged1)
+```
+
+On my double-wide merged dataset, I used pivot_longer() to select double-wide columns containing the underscore (e.g D_Height). They were moved into one column called 'name', then separated into two columns Type (D,G) and Variable (Height, X, Y). Then pivot_wider() was used to make each variable its own column with values under it. The tidyied dataset was called "merged1".
+
+```{r}
+#Wrangling
+iof <- merged1 %>% select(-Month, -Day, -Year, -Plot, -Quadrat)
+iof1 <- iof %>% mutate(Area = pi*(X/2)*(Y/2))
+iof1 %>% summarize_all(n_distinct)
+iof1 %>% filter(Type=="D") %>% arrange(desc(Area))
+iof1 %>% filter(Type=="G") %>% arrange(desc(Area))
+D <- iof1 %>% filter(Type=="D")
+G <- iof1 %>% filter(Type=="G")
+
+#Overall
+iof1 %>% filter(Type=="D") %>% summarize('AD_mean_height'= mean(Height), 'AD_med_height'= median(Height), 'AD_mean_area'= mean(Area), 'AD_med_area'= median(Area), 'AD_mean_X'= mean(X), 'AD_med_X'= median(X), 'AD_mean_Y'= mean(Y), 'AD_med_Y'= median(Y))
+
+iof1 %>% filter(Type=="G") %>% summarize('AG_mean_height'= mean(Height), 'AG_med_height'= median(Height), 'AG_mean_area'= mean(Area), 'AG_med_area'= median(Area), 'AG_mean_X'= mean(X), 'AG_med_X'= median(X), 'AG_mean_Y'= mean(Y), 'AG_med_Y'= median(Y))
+
+cor(D$Area, G$Height)
+cor(D$Area, G$Area)
+cor(D$Height, G$Height)
+
+#Dune per Treatment 
+iof1 %>% filter(Type=="D") %>% group_by(Treatment) %>% 
+summarize(`D_mean_height`=mean(Height), 'D_med_height' =median(Height), 'D_min_height'  =min(Height), 'D_max_height' =max(Height), 'D_n' =n(), 'D_sd_height' =sd(Height),
+'D_var_height' =var(Height), 'D_iqr_height' =IQR(Height), 'D_quan70_height'                  =quantile(Height, 0.7))
+  
+iof1 %>% filter(Type=="D") %>% group_by(Treatment) %>% 
+summarize(`D_mean_area`=mean(Area), 'D_med_area' =median(Area), 'D_min_area' =min(Area), 'D_max_area' =max(Area), 'D_n' =n(), 'D_sd_area' =sd(Area),
+'D_var_area' =var(Area), 'D_iqr_area' =IQR(Area), 'D_quan70_area'                  =quantile(Area, 0.7))
+
+iof1 %>% filter(Type=="D") %>% group_by(Treatment) %>% 
+summarize(`D_mean_X`=mean(X), 'D_med_X' =median(X), 'D_min_X'  =min(X), 'D_max_X' =max(X), 'D_nx' =n(), 'D_sd_X' =sd(X),
+'D_var_X' =var(X), 'D_iqr_X' =IQR(X), 'D_quan70_X' =quantile(X, 0.7))
+
+iof1 %>% filter(Type=="D") %>% group_by(Treatment) %>% 
+summarize(`D_mean_Y`=mean(Y), 'D_med_Y' =median(Y), 'D_min_Y'  =min(Y), 'D_max_Y' =max(Y), 'D_ny' =n(), 'D_sd_Y' =sd(Y),
+'D_var_Y' =var(Y), 'D_iqr_Y' =IQR(Y), 'D_quan70_Y' =quantile(Y, 0.7))
+
+#Grass per Treatment
+iof1 %>% filter(Type=="G") %>% group_by(Treatment) %>% 
+summarize(`G_mean_height`=mean(Height), 'G_med_height' =median(Height), 'G_min_height' =min(Height), 'G_max_height' =max(Height), 'G_sd_height' =sd(Height),
+'G_var_height' =var(Height), 'G_iqr_height' =IQR(Height), 'G_quan70_height'                  =quantile(Height, 0.7))
+  
+iof1 %>% filter(Type=="G") %>% group_by(Treatment) %>% 
+summarize(`G_mean_area`=mean(Area), 'G_med_area' =median(Area), 'G_min_area' =min(Area), 'G_max_area' =max(Area), 'G_sd_area' =sd(Area),
+'G_var_area' =var(Area), 'G_iqr_area' =IQR(Area), 'G_quan70_area'                  =quantile(Area, 0.7))
+
+iof1 %>% filter(Type=="G") %>% group_by(Treatment) %>% 
+summarize(`G_mean_X`=mean(X), 'G_med_X' =median(X), 'G_min_X'  =min(X), 'G_max_X' =max(X), 'G_nx' =n(), 'G_sd_X' =sd(X),
+'G_var_X' =var(X), 'G_iqr_X' =IQR(X), 'G_quan70_X' =quantile(X, 0.7))
+
+iof1 %>% filter(Type=="G") %>% group_by(Treatment) %>% 
+summarize(`G_mean_Y`=mean(Y), 'G_med_Y' =median(Y), 'G_min_Y'  =min(Y), 'G_max_Y' =max(Y), 'G_ny' =n(), 'G_sd_Y' =sd(Y),
+'G_var_Y' =var(Y), 'G_iqr_Y' =IQR(Y), 'G_quan70_Y' =quantile(Y, 0.7))
+```
+
+All six dplyr functions were used to produce summary statistics of mean, median, min, max, n, IQR, sd, quantile, cor, and var. Mutate was used to generate a new column called "Area" for both Dunes and Grasses. The equation used to calculate the area was the area of an ellipse, which was A=(pi)(radiusX)(radiusY). The X and Y columns had to be divided in 2 for the radius.
+
+The four numeric variables were Height, X, Y, and Area. The two categorical variables were Type and Treatment. The data showed the highest correlation between Dune Area and Grass Area. Dune heights ranged from 0-10.3 cm, Dune areas ranged from 0-11094 cm^2, Grass heights ranged from 1-26 cm, and Grass areas ranged from 1.98-10603 cm^2. The number of plants per treatment decreased when treatment increased, meaning as rainfall increases, the patchiness of the plot decreases. As the treatment increased, the dune mean X and Y increased and the dune mean height and area increased as well except decreased a little at treatment 5. As the treatment increased, the grass mean height, X, and Y increased, and the grass mean area increased as well except decreased a little at treatment 5.
+
+```{r}
+#Visualizing
+#correlation heat map
+iof1%>%select_if(is.numeric)%>%cor%>%as.data.frame%>%
+rownames_to_column%>%pivot_longer(-1)%>%
+ggplot(aes(rowname,name,fill=value))+geom_tile()+
+geom_text(aes(label=round(value,2)))+
+xlab("")+ylab("")+ggtitle("Correlation Heatmap")
+
+ggplot(iof1, aes(x = Treatment, y = Area, fill=Type))+
+geom_bar(stat="summary",fun.y="mean", position="dodge")+
+geom_errorbar(stat="summary",position="dodge")+
+scale_y_continuous(breaks = scales::pretty_breaks(n = 20))+
+theme_minimal()+
+scale_fill_manual("Type", values = c("D" = "#CC9966", "G" = "#33CC66"))+
+ggtitle("Area of Dune and Grass by Treatment")+xlab("Treatment")+ylab("Mean Area (cm^2)")
+
+p <- ggplot(iof1, aes(X, Y)) + theme_minimal()
+p + geom_point(aes(color = factor(Type)), alpha=0.9) +
+scale_color_brewer(palette="Paired")+
+ggtitle("Dune and Grass Characteristics")+xlab("Width (cm)")+ylab("Length (cm)")
+```
+
+The first visualization is the correlation heat map. It shows that some of the highest correlations are between Area and X (r=0.94), X and Y (r=0.92), and Area and Y (r=0.91). The lowest correlation is Height and Area (r=0.28). 
+
+The second visualization is a bar chart showing the mean area of the dunes and grass by treatment. It shows that as the dune area increases, the grass area increases as well. The highest mean area of the dunes and grasses are found in Treatment 4 and then decreases by approximately 50 cm^2 for Treatment 5. The error bars become larger as Treatment increases.
+
+The third visualization is a scatterplot showing the width and length of dunes and grasses. In general, it seems that as the width increases, the length increases for both dunes and grasses. However, at the top of the plot, there are plants where the lengths are large, but have varying widths. It also seems that there are two outliers at about (15,90) and (84,63).
+
+```{r}
+#Dimentionality Reduction
+library(cluster)
+
+clust_dat <- iof1 %>% select(Height, X, Y, Area)
+sil_width<-vector()
+for(i in 2:10){
+pam_fit <- iof1%>%select(-Plant, -Treatment, -Type)%>%pam(i)
+sil_width[i] <- pam_fit$silinfo$avg.width
+}
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name="k",breaks=1:10)
+
+pam1 <- clust_dat %>% pam(k=2)
+pam1
+pamclust<-clust_dat %>% mutate(cluster=as.factor(pam1$clustering))
+pamclust %>% ggplot(aes(Area,Height,color=cluster)) + geom_point()+ggtitle("PAM Area vs. Height")+xlab("Area (cm^2)")+ylab("Height (cm)")
+pamclust %>% group_by(cluster) %>% summarize_if(is.numeric,mean,na.rm=T)
+iof1[pam1$id.med,]
+
+library(GGally)
+ggpairs(pamclust, columns=1:4, aes(color=cluster))
+
+plot(pam1,which=2)
+
+```
+
+The number of clusters I chose for the PAM analysis was k=2 because the mean silhouette width at k=2 was the highest at approximately 0.86. After running the analysis for Area and Height, it showed that the two medoids were at (130, 6) and (3859,15). The pairwise combination of all 4 variables showed a strong positive correlation between Area and X and Area and Y for Cluster 1 and Cluster 2. The width and length would need to increase for area to increase as well. There are weak negative correlations for Height and X and Height and Area for Cluster 2. In the scatterplot of those negative correlations, it shows that the points seem to increase then decrease, which is similar to the observations made in the wrangling portion where some numeric variables seem to increase with increasing Treatment up to Treatment 4 but then decrease a little bit at Treatment 5. Cluster 2 seems to be the values with higher Height and Area, which could mean that the clusters are separated based on Treatment of reduced and increased rainfall. The plot of mean silhouette width (0.82) showed that a strong structure has been found. 
+
+```{R}
