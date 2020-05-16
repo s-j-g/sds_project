@@ -39,19 +39,8 @@
       
       <guid>/blog/python/</guid>
       <description>A glimpse into some python tools I have learned in my Computational Biology course.
-R and Python Interaction Reticulate package allows R and Python to interact with each other.
+R and Python Reticulate package allows R and Python to interact with each other.
 # R code library(reticulate) la&amp;lt;-&amp;quot;indian&amp;quot; # Python code import re la=&amp;quot;blanket&amp;quot; # R code: access R-defined objects with r cat(c(la,py$la)) ## indian blanket # Python code: access Python-defined objects with py$ print(r.la,la) ## indian blanket  Regular Expressions (regex) Regular Expressions search for defined patterns in a block of text.</description>
-    </item>
-    
-    <item>
-      <title>Hello R Markdown</title>
-      <link>/blog/2015-07-23-r-rmarkdown/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
-      
-      <guid>/blog/2015-07-23-r-rmarkdown/</guid>
-      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-You can embed an R code chunk like this:
-summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
     </item>
     
     <item>

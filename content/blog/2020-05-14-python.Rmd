@@ -9,7 +9,7 @@ description: ''
 ---
 A glimpse into some python tools I have learned in my Computational Biology course. 
 
-# R and Python Interaction
+# R and Python
 
 Reticulate package allows R and Python to interact with each other. 
 
@@ -51,5 +51,9 @@ string1="ATGGCAATAACCCCCCGTTTCTACTTCTAGAGGAGAAAAGTATTGACATGAGCGCTCCCGGCACAAGGGCC
 re.findall(r"A[ATGC]TAAT",string1)
 re.findall(r"GC[AG][AT]TG",string1)
 ```
+
+# Other Packages
+
+Besides Reticulate, other useful python packages that we touched on include NumPy, pandas, Matplotlib, and Seaborn.
 
 ![](/blog/2020-05-14-python_files/indianblanket.JPG){width=60%}
