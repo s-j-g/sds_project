@@ -1,0 +1,12 @@
+---
+title: "About Me"
+author: Sally Jung
+date: May 14, 2020
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Hello

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>about on Portfolio</title>
+    <link>/tags/about/</link>
+    <description>Recent content in about on Portfolio</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Thu, 14 May 2020 22:55:05 -0400</lastBuildDate>
+    
+	<atom:link href="/tags/about/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>About Me</title>
+      <link>/about/</link>
+      <pubDate>Thu, 14 May 2020 22:55:05 -0400</pubDate>
+      
+      <guid>/about/</guid>
+      <description>About Me Hello, my name is Sally Jung! I’m pursuing a B.S. in Environmental Science with a focus in biology and a B.A. in Geography at the University of Texas at Austin. My interests are in ecology, ecological restoration, conservation, and water resources. I’m currently a project leader for UT Microfarm and last summer I worked as an undergraduate research intern through the NSF REU program at the Jornada LTER site.</description>
+    </item>
+    
+  </channel>
+</rss>

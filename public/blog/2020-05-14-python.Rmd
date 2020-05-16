@@ -9,17 +9,39 @@ description: ''
 ---
 A glimpse into some python tools I have learned in my Computational Biology course. 
 
+# R and Python Interaction
+
+Reticulate package allows R and Python to interact with each other. 
+
 ```{R}
+# R code
 library(reticulate)
+la<-"indian"
 ```
 
 ```{python}
+# Python code
 import re 
+la="blanket"
+```
+
+```{R}
+# R code: access R-defined objects with r
+cat(c(la,py$la))
+```
+
+```{python}
+# Python code: access Python-defined objects with py$
+print(r.la,la)
 ```
 
 # Regular Expressions (regex)
 
 Regular Expressions search for defined patterns in a block of text.
+
+```{python}
+import re 
+```
 
 ```{python}
 # Match restriction enzyme binding sites ANTAAT and GCRWTG. Note that per the IUPAC nucleotide code, N is any base, R is A or G, W is A or T.
@@ -29,3 +51,5 @@ string1="ATGGCAATAACCCCCCGTTTCTACTTCTAGAGGAGAAAAGTATTGACATGAGCGCTCCCGGCACAAGGGCC
 re.findall(r"A[ATGC]TAAT",string1)
 re.findall(r"GC[AG][AT]TG",string1)
 ```
+
+![](/blog/2020-05-14-python_files/indianblanket.JPG){width=60%}

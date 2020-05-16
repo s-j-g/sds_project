@@ -1,0 +1,18 @@
+---
+categories:
+- about
+date: "2020-05-14T22:55:05-04:00"
+showpagemeta: false
+tags:
+- about
+title: About Me
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# About Me
+
+Hello, my name is Sally Jung! I'm pursuing a B.S. in Environmental Science with a focus in biology and a B.A. in Geography at the University of Texas at Austin. My interests are in ecology, ecological restoration, conservation, and water resources. I'm currently a project leader for UT Microfarm and last summer I worked as an undergraduate research intern through the NSF REU program at the Jornada LTER site. In my free time I love to garden, bake, canoe, and eat icecream (especially Tillamook)!

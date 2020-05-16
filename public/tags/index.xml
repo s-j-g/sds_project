@@ -6,15 +6,24 @@
     <description>Recent content in Tags on Portfolio</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sun, 02 Oct 2016 22:55:05 -0400</lastBuildDate>
+    <lastBuildDate>Thu, 14 May 2020 22:55:05 -0400</lastBuildDate>
     
 	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>about</title>
+      <link>/tags/about/</link>
+      <pubDate>Thu, 14 May 2020 22:55:05 -0400</pubDate>
+      
+      <guid>/tags/about/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>projects</title>
       <link>/tags/projects/</link>
-      <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
+      <pubDate>Thu, 14 May 2020 22:55:05 -0400</pubDate>
       
       <guid>/tags/projects/</guid>
       <description></description>
